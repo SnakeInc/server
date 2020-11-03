@@ -73,6 +73,6 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
 
         Gson gson = new Gson();
 
-        //this.send(gson.toJson(json));
+        //this.send(gson.toJson(Json));
     }
 }

@@ -24,7 +24,7 @@ public class Map {
     public int[][] calculateFrame() {
         players.forEach((id, player) -> {
             if(player.isActive()) {
-                if(player.isReady()) {
+                if(!player.isReady()) {
                     int playerDirection = player.getDirection().getDirection();
                     int playerSpeed = player.getSpeed();
                     if(playerDirection == 0 || playerDirection == 2) {
