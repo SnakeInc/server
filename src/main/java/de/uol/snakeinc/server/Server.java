@@ -1,13 +1,11 @@
 package de.uol.snakeinc.server;
 
-import de.uol.snakeinc.server.connection.ConnectionThread;
-import de.uol.snakeinc.server.game.GameHandler;
+import de.uol.snakeinc.server.server.ServerModule;
 
 public class Server {
-    public static void main(String[] args) {
-        GameHandler gameHandler = new GameHandler();
-        ConnectionThread connectionThread = new ConnectionThread(gameHandler);
-        connectionThread.start();
 
+    public static void main(String[] args) {
+        ServerModule serverModule = new ServerModule();
     }
+
 }

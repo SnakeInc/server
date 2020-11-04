@@ -1,24 +1,29 @@
 package de.uol.snakeinc.server.connection;
 
+import com.google.inject.Injector;
 import de.uol.snakeinc.server.game.GameHandler;
+import de.uol.snakeinc.server.server.WebSocketEnableWss;
 
 import java.io.IOException;
 
 public class ConnectionThread extends Thread {
 
         private WebSocketServer webSocketServer;
-        private GameHandler gameHandler;
+        private Injector injector;
         private boolean running;
 
-        public ConnectionThread(GameHandler gameHandler) {
-                this.gameHandler = gameHandler;
+        public ConnectionThread() {
                 this.running = true;
+        }
+
+        public void injectInjector(Injector injector) {
+                this.injector = injector;
         }
 
         @Override
         public void run() {
                 while (running) {
-                        webSocketServer = new WebSocketServer(gameHandler);
+                        webSocketServer = new WebSocketEnableWss().initWebSocketServer(injector.getInstance(GameHandler.class), 555);
                         webSocketServer.run();
                 }
         }
@@ -30,5 +35,9 @@ public class ConnectionThread extends Thread {
                 } catch (IOException | InterruptedException e) {
                         e.printStackTrace();
                 }
+        }
+
+        public WebSocketServer getWebSocketServer() {
+                return webSocketServer;
         }
 }

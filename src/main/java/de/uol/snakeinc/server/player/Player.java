@@ -2,8 +2,12 @@ package de.uol.snakeinc.server.player;
 
 import de.uol.snakeinc.server.game.Game;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class Player implements Instructions {
 
+    private final static Logger LOG = Logger.getGlobal();
     private String name;
     private int id;
     private Direction direction = new Direction();
@@ -15,6 +19,7 @@ public class Player implements Instructions {
     private Game game = null;
 
     public Player(String name, int startX, int startY) {
+        LOG.setLevel(Level.FINEST);
         this.name = name;
         positionX = startX;
         positionY = startY;
@@ -58,8 +63,10 @@ public class Player implements Instructions {
         this.positionY = positionY;
     }
 
-    public void setActive(boolean active) {
-        this.active = active;
+    public void died() {
+        this.active = false;
+        //Game ended?
+        LOG.fine("Player " + name + " died!");
     }
 
     public void setReadyFalse() {

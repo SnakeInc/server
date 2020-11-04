@@ -2,7 +2,7 @@ package de.uol.snakeinc.server.player;
 
 public class Direction {
 
-    private int direction = 1;
+    private int direction = (int)(Math.random() * 4);
 
     public void turnLeft(){
         if(direction == 0) {

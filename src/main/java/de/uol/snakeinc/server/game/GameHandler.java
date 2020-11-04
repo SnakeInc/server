@@ -1,5 +1,6 @@
 package de.uol.snakeinc.server.game;
 
+import com.google.inject.Injector;
 import de.uol.snakeinc.server.player.Player;
 
 import java.util.HashMap;
@@ -8,11 +9,16 @@ import java.util.TimerTask;
 
 public class GameHandler {
 
+    private Injector injector;
     private int gameIdPointer = 0;
     private HashMap<Integer, Game> games = new HashMap<>();
 
+    public void injectInjector(Injector injector) {
+        this.injector = injector;
+    }
+
     public Game addPlayer(Player player) {
-        if(games.isEmpty() || games.get(gameIdPointer).isStarted()) {
+        if(games.isEmpty() || !games.containsKey(gameIdPointer)) {
             Game game = new Game(this, gameIdPointer);
             game.getPlayers().add(player);
             games.put(gameIdPointer, game);
@@ -40,6 +46,10 @@ public class GameHandler {
 
     public void gameEnded(int gameId) {
         games.remove(gameId);
+    }
+
+    public Injector getInjector() {
+        return injector;
     }
 
 }

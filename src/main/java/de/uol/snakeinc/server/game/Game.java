@@ -1,20 +1,27 @@
 package de.uol.snakeinc.server.game;
 
-import com.google.gson.Gson;
 import com.google.gson.stream.JsonWriter;
+import de.uol.snakeinc.server.connection.ConnectionThread;
 import de.uol.snakeinc.server.map.Map;
 import de.uol.snakeinc.server.player.Player;
 
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.StringWriter;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Game {
 
+    private final static Logger LOG = Logger.getGlobal();
     private GameHandler gameHandler;
     private boolean isActive = false;
     private boolean hasStarted = false;
+    private boolean hasEnded = false;
     private int gameId;
     private ArrayList<Player> players = new ArrayList<>();
     private Map map;
@@ -22,11 +29,25 @@ public class Game {
     public Game(GameHandler gameHandler, int gameId) {
         this.gameHandler = gameHandler;
         this.gameId = gameId;
+        LOG.setLevel(Level.FINEST);
     }
 
-    public String nextTurn() {
+    private void initTurn() {
+        int[][] mapIntArray = map.calculateInitFrame();
+        generateJsonAndSend(mapIntArray);
+    }
+
+    public void nextTurn() {
         int[][] mapIntArray = map.calculateFrame();
-        try (JsonWriter writer = new JsonWriter(new FileWriter("C:\\Users\\Jannes\\Desktop\\staff.json"))) {
+        if(players.stream().noneMatch(Player::isActive)) {
+            endGame();
+        }
+        generateJsonAndSend(mapIntArray);
+    }
+
+    private void generateJsonAndSend(int[][] mapIntArray) {
+        StringWriter jsonStringWriter = new StringWriter();
+        try (JsonWriter writer = new JsonWriter(jsonStringWriter)) {
             writer.beginObject();
             writer.name("width").value(map.getxSize());
             writer.name("height").value(map.getySize());
@@ -72,14 +93,23 @@ public class Game {
                 }
             });
             writer.endObject();
-            writer.name("you").value(1);
+            writer.name("you").value("");
             writer.name("running").value(this.isActive);
-            writer.name("deadline").value("2020-11-020T12:00:00Z");
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
+            Instant instant = Instant.ofEpochSecond(Instant.now().getEpochSecond() + 10L);
+            String deadline = simpleDateFormat.format(Date.from(instant));
+            writer.name("deadline").value(deadline);
             writer.endObject();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return "nope";
+        HashMap<Integer, String> playerJsonList = new HashMap<>();
+        players.forEach(player -> {
+            String playerJson = jsonStringWriter.toString();
+            playerJson = playerJson.replaceFirst("(\"you\":\"\")", "\"you\":\"" + player.getId() + "\"");
+            playerJsonList.put(player.getId(), playerJson);
+        });
+        gameHandler.getInjector().getInstance(ConnectionThread.class).getWebSocketServer().sendJson(playerJsonList, this);
     }
 
     public ArrayList<Player> getPlayers() {
@@ -94,27 +124,33 @@ public class Game {
         return hasStarted;
     }
 
+    public boolean hasEnded() {
+        return hasEnded;
+    }
+
     public void startGame() {
         HashMap<Integer, Player> mapPlayers = new HashMap<>();
         final var ref = new Object() {
             int i = 0;
         };
         this.players.forEach((player) -> {
-            mapPlayers.put(ref.i, player);
+            mapPlayers.put(player.getId(), player);
             ++ref.i;
         });
-        map = new Map(40, 40, mapPlayers);
-        nextTurn();
         hasStarted = true;
         isActive = true;
-        System.out.println("Started game with players: ");
+        map = new Map(40, 40, mapPlayers);
+        initTurn();
+        LOG.fine("Started game with players: ");
         mapPlayers.forEach((id, player) ->
-            System.out.println("ID: " + id + "   Name: " + player.getName())
+            LOG.fine("ID: " + id + "   Name: " + player.getName())
         );
     }
 
-    public void endGame(int gameId) {
-        gameHandler.gameEnded(gameId);
+    public void endGame() {
         isActive = false;
+        hasEnded = true;
+        //gameHandler.getInjector().getInstance(ConnectionThread.class).getWebSocketServer().endGame(this);
+        gameHandler.gameEnded(gameId);
     }
 }
