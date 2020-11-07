@@ -41,7 +41,7 @@ public class Player implements Instructions {
 
     public void speedUp() {
         ++speed;
-        if(speed > 10) {
+        if(speed >= 10) {
             active = false;
         }
         ready = true;
@@ -64,9 +64,11 @@ public class Player implements Instructions {
     }
 
     public void died() {
-        this.active = false;
-        //Game ended?
-        LOG.fine("Player " + name + " died!");
+        if(this.active) {
+            this.active = false;
+            //Game ended?
+            LOG.fine("Player " + name + " died!");
+        }
     }
 
     public void setReadyFalse() {

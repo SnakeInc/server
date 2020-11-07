@@ -9,7 +9,6 @@ import org.java_websocket.handshake.ClientHandshake;
 
 import java.net.InetSocketAddress;
 import java.util.HashMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
@@ -42,7 +41,10 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
 
     @Override
     public void onClose(WebSocket webSocket, int i, String s, boolean b) {
-        webSocket.close();
+        if(playerHashMap.containsKey(webSocket)) {
+            playerHashMap.get(webSocket).died();
+        }
+        //webSocket.close();
     }
 
     @Override

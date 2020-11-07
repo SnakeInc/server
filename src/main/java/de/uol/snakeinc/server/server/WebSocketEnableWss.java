@@ -36,7 +36,7 @@ public class WebSocketEnableWss {
 
     private static SSLContext getContext() {
         SSLContext context;
-        String password = "hyvsYMJQRzT68oRA9tnjHYj565YyRZFmMYl_0qKxbPppxeaZXqtBgjnEhSIxk4G6";
+        String password = "";
         String pathname = "C:\\Apache24\\conf\\ssl\\wss";
         try {
             context = SSLContext.getInstance("TLS");
@@ -45,14 +45,18 @@ public class WebSocketEnableWss {
                 "-----BEGIN CERTIFICATE-----", "-----END CERTIFICATE-----");
             byte[] keyBytes = parseDERFromPEM(Files.readAllBytes(new File(pathname + File.separator + "privkey.pem").toPath()),
                 "-----BEGIN PRIVATE KEY-----", "-----END PRIVATE KEY-----");
+            byte[] chainBytes = parseDERFromPEM(Files.readAllBytes(new File(pathname + File.separator + "pubchain.pem").toPath()),
+                "-----BEGIN CERTIFICATE-----", "-----END CERTIFICATE-----");
 
             X509Certificate cert = generateCertificateFromDER(certBytes);
+            X509Certificate chain = generateCertificateFromDER(chainBytes);
             RSAPrivateKey key = generatePrivateKeyFromDER(keyBytes);
 
             KeyStore keystore = KeyStore.getInstance("JKS");
             keystore.load(null);
             keystore.setCertificateEntry("cert-alias", cert);
-            keystore.setKeyEntry("key-alias", key, password.toCharArray(), new Certificate[]{cert});
+            keystore.setCertificateEntry("cert-alias", chain);
+            keystore.setKeyEntry("key-alias", key, password.toCharArray(), new Certificate[]{cert, chain});
 
             KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
             kmf.init(keystore, password.toCharArray());
