@@ -37,7 +37,7 @@ public class WebSocketEnableWss {
     private static SSLContext getContext() {
         SSLContext context;
         String password = "";
-        String pathname = "C:\\Apache24\\conf\\ssl\\wss";
+        String pathname = "configs";
         try {
             context = SSLContext.getInstance("TLS");
 

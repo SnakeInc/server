@@ -12,6 +12,8 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -25,6 +27,7 @@ public class Game {
     private int gameId;
     private ArrayList<Player> players = new ArrayList<>();
     private Map map;
+    private Timer gameTimer = new Timer();
 
     public Game(GameHandler gameHandler, int gameId) {
         this.gameHandler = gameHandler;
@@ -39,10 +42,15 @@ public class Game {
 
     public void nextTurn() {
         int[][] mapIntArray = map.calculateFrame();
+        boolean end = false;
         if(players.stream().noneMatch(Player::isActive)) {
             endGame();
+            end = true;
         }
         generateJsonAndSend(mapIntArray);
+        if(end) {
+            gameHandler.getInjector().getInstance(ConnectionThread.class).getWebSocketServer().endGame(this);
+        }
     }
 
     private void generateJsonAndSend(int[][] mapIntArray) {
@@ -110,10 +118,20 @@ public class Game {
             playerJsonList.put(player.getId(), playerJson);
         });
         gameHandler.getInjector().getInstance(ConnectionThread.class).getWebSocketServer().sendJson(playerJsonList, this);
+        if(!isActive) {
+            gameTimer.cancel();
+            gameTimer.purge();
+        } else {
+            resetRoundTimer();
+        }
     }
 
     public ArrayList<Player> getPlayers() {
         return players;
+    }
+
+    public int getGameId() {
+        return gameId;
     }
 
     public boolean isActive() {
@@ -139,7 +157,7 @@ public class Game {
         });
         hasStarted = true;
         isActive = true;
-        map = new Map(40, 40, mapPlayers);
+        map = new Map((int)(Math.random() * 30) + 31, (int)(Math.random() * 30) + 31, mapPlayers);
         initTurn();
         LOG.fine("Started game with players: ");
         mapPlayers.forEach((id, player) ->
@@ -148,9 +166,23 @@ public class Game {
     }
 
     public void endGame() {
+        LOG.fine("Game " + gameId + " has ended!");
         isActive = false;
         hasEnded = true;
-        //gameHandler.getInjector().getInstance(ConnectionThread.class).getWebSocketServer().endGame(this);
         gameHandler.gameEnded(gameId);
+    }
+
+    public void resetRoundTimer() {
+        gameTimer.cancel();
+        gameTimer.purge();
+        gameTimer = new Timer();
+        TimerTask timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                LOG.fine("Updated timer");
+                nextTurn();
+            }
+        };
+        gameTimer.schedule(timerTask, 14000);
     }
 }

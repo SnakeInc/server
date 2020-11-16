@@ -42,7 +42,7 @@ public class Player implements Instructions {
     public void speedUp() {
         ++speed;
         if(speed >= 10) {
-            active = false;
+            died("Too fast!");
         }
         ready = true;
     }
@@ -50,7 +50,7 @@ public class Player implements Instructions {
     public void speedDown() {
         --speed;
         if(speed < 1) {
-            active = false;
+            died("Too slow!");
         }
         ready = true;
     }
@@ -63,11 +63,10 @@ public class Player implements Instructions {
         this.positionY = positionY;
     }
 
-    public void died() {
+    public void died(String reason) {
         if(this.active) {
             this.active = false;
-            //Game ended?
-            LOG.fine("Player " + name + " died!");
+            LOG.fine("Game: " + game.getGameId()+ " player " + name + " died! Because: " + reason);
         }
     }
 

@@ -38,7 +38,7 @@ public class Map {
                             newPositionX = player.getPositionX() - playerSpeed;
                         }
                         if(newPositionX < 0 || newPositionX >= xSize) {
-                            player.died();
+                            player.died("Not in map!");
                         }
                         for(int i = 1; i <= playerSpeed; ++i) {
                             if(turnCount % 6 == 0 && playerSpeed > 2) {
@@ -66,7 +66,7 @@ public class Map {
                             newPositionY = player.getPositionY() + playerSpeed;
                         }
                         if(newPositionY < 0 || newPositionY >= ySize) {
-                            player.died();
+                            player.died("Not in map!");
                         }
                         for(int i = 1; i <= playerSpeed; ++i) {
                             if(turnCount % 6 == 0 && playerSpeed > 2) {
@@ -89,7 +89,7 @@ public class Map {
                     }
                     player.setReadyFalse();
                 } else {
-                    player.died();
+                    player.died("Not ready!");
                 }
             }
         });
@@ -101,7 +101,7 @@ public class Map {
         if((x >= 0 && x < xSize) && (y >= 0 && y < ySize)) {
             if (oldMap[y][x] != 0) {
                 oldMap[y][x] = -1;
-                players.get(playerId).died();
+                players.get(playerId).died("Collision!");
             } else {
                 oldMap[y][x] = playerId;
             }
