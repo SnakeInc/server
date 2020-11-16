@@ -17,7 +17,8 @@ public class GameHandler {
         this.injector = injector;
     }
 
-    public Game addPlayer(Player player) {
+    public Player addPlayer(String name) {
+        Player player = new Player(name);
         if(games.isEmpty() || !games.containsKey(gameIdPointer)) {
             Game game = new Game(this, gameIdPointer);
             game.getPlayers().add(player);
@@ -36,7 +37,7 @@ public class GameHandler {
             player.setId(games.get(gameIdPointer).getPlayers().size() + 1);
             player.setGame(games.get(gameIdPointer));
         }
-        return games.get(gameIdPointer);
+        return player;
     }
 
     private void startGame() {

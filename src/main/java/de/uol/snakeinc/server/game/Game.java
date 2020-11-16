@@ -147,21 +147,13 @@ public class Game {
     }
 
     public void startGame() {
-        HashMap<Integer, Player> mapPlayers = new HashMap<>();
-        final var ref = new Object() {
-            int i = 0;
-        };
-        this.players.forEach((player) -> {
-            mapPlayers.put(player.getId(), player);
-            ++ref.i;
-        });
         hasStarted = true;
         isActive = true;
-        map = new Map((int)(Math.random() * 30) + 31, (int)(Math.random() * 30) + 31, mapPlayers);
+        map = new Map((int)(Math.random() * 30) + 31, (int)(Math.random() * 30) + 31, players);
         initTurn();
         LOG.fine("Started game with players: ");
-        mapPlayers.forEach((id, player) ->
-            LOG.fine("ID: " + id + "   Name: " + player.getName())
+        players.forEach((player) ->
+            LOG.fine("ID: " + player.getId() + "   Name: " + player.getName())
         );
     }
 

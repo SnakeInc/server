@@ -12,17 +12,15 @@ public class Player implements Instructions {
     private int id;
     private Direction direction = new Direction();
     private int speed = 1;
-    private int positionX;
-    private int positionY;
+    private int positionX = 0;
+    private int positionY = 0;
     private boolean active = true;
     private boolean ready = false;
     private Game game = null;
 
-    public Player(String name, int startX, int startY) {
+    public Player(String name) {
         LOG.setLevel(Level.FINEST);
         this.name = name;
-        positionX = startX;
-        positionY = startY;
     }
 
     public void turnLeft() {

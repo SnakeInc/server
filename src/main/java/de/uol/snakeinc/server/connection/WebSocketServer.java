@@ -29,18 +29,8 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
         LOG.fine("Got a new client with: " + webSocket.getRemoteSocketAddress());
         webSocket.setAttachment(UUID.randomUUID());
         String name = webSocket.getResourceDescriptor().toLowerCase().replace("/?key=", "");
-        Player player = new Player(name, (int)(Math.random() * 40), (int)(Math.random() * 40));
+        Player player = gameHandler.addPlayer(name);
         playerHashMap.put(webSocket.getAttachment(), new WebsocketPlayerEntry(player, webSocket));
-        gameHandler.addPlayer(player);
-        player.getGame().getPlayers().forEach((playerEntry) -> {
-            if(player != playerEntry) {
-                while(player.getPositionX() == playerEntry.getPositionX()
-                    && player.getPositionY() == playerEntry.getPositionY()) {
-                    player.setPositionX(playerEntry.getPositionX() + 2);
-                    player.setPositionY(playerEntry.getPositionY() + 2);
-                }
-            }
-        });
     }
 
     @Override
@@ -58,7 +48,7 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
     @Override
     public void onMessage(WebSocket webSocket, String s) {
         if(playerHashMap.containsKey(webSocket.getAttachment()) && playerHashMap.get(webSocket.getAttachment()).getPlayer().isActive()) {
-            LOG.fine("Got a new message from: " + webSocket.getRemoteSocketAddress() + " - Player: " + playerHashMap.get(webSocket.getAttachment()) + " - " + s);
+            LOG.fine("Got a new message from: " + webSocket.getRemoteSocketAddress() + " - Player: " + playerHashMap.get(webSocket.getAttachment()).getPlayer().getName() + " - " + s);
             if(s.contains(Action.CHANGE_NOTHING.name().toLowerCase())) {
                 playerHashMap.get(webSocket.getAttachment()).getPlayer().doNothing();
             } else if(s.contains(Action.SLOW_DOWN.name().toLowerCase())) {
