@@ -36,8 +36,8 @@ public class GameHandler {
             }, 10000);
         } else {
             player = new Player(name, games.get(gameIdPointer));
-            games.get(gameIdPointer).getInteractors().add(player);
             player.setId(games.get(gameIdPointer).getInteractors().size() + 1);
+            games.get(gameIdPointer).getInteractors().add(player);
         }
         return player;
     }
