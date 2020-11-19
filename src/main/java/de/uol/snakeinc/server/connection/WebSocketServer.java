@@ -3,6 +3,7 @@ package de.uol.snakeinc.server.connection;
 import de.uol.snakeinc.server.game.Action;
 import de.uol.snakeinc.server.game.Game;
 import de.uol.snakeinc.server.game.GameHandler;
+import de.uol.snakeinc.server.interactor.Interactor;
 import de.uol.snakeinc.server.player.Player;
 import de.uol.snakeinc.server.utility.WebsocketPlayerEntry;
 import org.java_websocket.WebSocket;
@@ -60,12 +61,7 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
             } else if(s.contains(Action.TURN_RIGHT.name().toLowerCase())) {
                 playerHashMap.get(webSocket.getAttachment()).getPlayer().turnRight();
             }
-            Game game = playerHashMap.get(webSocket.getAttachment()).getPlayer().getGame();
-            int countReadyPlayers = (int) game.getPlayers().stream().filter(Player::isReady).count();
-            int countActivePlayers = (int) game.getPlayers().stream().filter(Player::isActive).count();
-            if(countReadyPlayers >= countActivePlayers) {
-                game.nextTurn();
-            }
+            playerHashMap.get(webSocket.getAttachment()).getPlayer().getGame().gameReadyNextTurn();
         }
     }
 
@@ -95,7 +91,7 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
     }
 
     public void endGame(Game game) {
-        game.getPlayers().forEach((player) -> playerHashMap.forEach((uuid , wpe) -> {
+        game.getInteractors().forEach((player) -> playerHashMap.forEach((uuid , wpe) -> {
             if(player == wpe.getPlayer() && wpe.getWebSocket().isOpen()) {
                 wpe.getWebSocket().close();
             }

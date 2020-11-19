@@ -1,5 +1,6 @@
 package de.uol.snakeinc.server.map;
 
+import de.uol.snakeinc.server.interactor.Interactor;
 import de.uol.snakeinc.server.player.Player;
 
 import java.util.ArrayList;
@@ -10,19 +11,19 @@ public class Map {
     private int xSize;
     private int ySize;
     private int turnCount = 1;
-    private ArrayList<Player> players;
+    private ArrayList<Interactor> interactors;
     private int[][] map;
-    private HashMap<int[], Player> logRounds = new HashMap<>();
+    private HashMap<int[], Interactor> logRounds = new HashMap<>();
 
-    public Map(int xSize, int ySize, ArrayList<Player> players) {
+    public Map(int xSize, int ySize, ArrayList<Interactor> interactors) {
         this.xSize = xSize;
         this.ySize = ySize;
-        this.players = players;
+        this.interactors = interactors;
         this.map = new int[ySize][xSize];
     }
 
     public int[][] calculateInitFrame() {
-        players.forEach((listPlayer) -> {
+        interactors.forEach((listPlayer) -> {
             listPlayer.setPositionX((int)(Math.random() * xSize));
             listPlayer.setPositionY((int)(Math.random() * ySize));
             setMapEntry(listPlayer.getPositionX(), listPlayer.getPositionY(), listPlayer);
@@ -31,7 +32,7 @@ public class Map {
     }
 
     public int[][] calculateFrame() {
-        players.forEach((player) -> {
+        interactors.forEach((player) -> {
             if(player.isActive()) {
                 if(player.isReady()) {
                     int playerDirection = player.getDirection().getDirection();
@@ -103,7 +104,7 @@ public class Map {
         return map;
     }
 
-    private void setMapEntry(int x, int y, Player player) {
+    private void setMapEntry(int x, int y, Interactor player) {
         if((x >= 0 && x < xSize) && (y >= 0 && y < ySize)) {
             if (map[y][x] != 0) {
                 map[y][x] = -1;
@@ -116,7 +117,7 @@ public class Map {
         }
     }
 
-    private void logOneRound(Player player, int x, int y) {
+    private void logOneRound(Interactor player, int x, int y) {
         int[] intArray = new int[3];
         intArray[0] = turnCount;
         intArray[1] = x;
@@ -138,5 +139,13 @@ public class Map {
 
     public int getySize() {
         return ySize;
+    }
+
+    public int[][] getMap() {
+        return map;
+    }
+
+    public int getTurnCount(){
+        return turnCount;
     }
 }

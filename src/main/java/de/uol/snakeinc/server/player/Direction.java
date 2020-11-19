@@ -1,6 +1,6 @@
 package de.uol.snakeinc.server.player;
 
-public class Direction {
+public class Direction implements Cloneable {
 
     private int direction = (int)(Math.random() * 4);
 
@@ -22,5 +22,9 @@ public class Direction {
 
     public int getDirection() {
         return direction;
+    }
+
+    public Direction clone() throws CloneNotSupportedException {
+        return (Direction) super.clone();
     }
 }

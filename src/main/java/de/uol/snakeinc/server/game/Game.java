@@ -1,7 +1,9 @@
 package de.uol.snakeinc.server.game;
 
 import com.google.gson.stream.JsonWriter;
+import de.uol.snakeinc.server.ai.AI;
 import de.uol.snakeinc.server.connection.ConnectionThread;
+import de.uol.snakeinc.server.interactor.Interactor;
 import de.uol.snakeinc.server.map.Map;
 import de.uol.snakeinc.server.player.Player;
 
@@ -25,7 +27,7 @@ public class Game {
     private boolean hasStarted = false;
     private boolean hasEnded = false;
     private int gameId;
-    private ArrayList<Player> players = new ArrayList<>();
+    private ArrayList<Interactor> interactors = new ArrayList<>();
     private Map map;
     private Timer gameTimer = new Timer();
 
@@ -43,7 +45,7 @@ public class Game {
     public void nextTurn() {
         int[][] mapIntArray = map.calculateFrame();
         boolean end = false;
-        if(players.stream().noneMatch(Player::isActive)) {
+        if(interactors.stream().noneMatch(Interactor::isActive) && !hasEnded) {
             endGame();
             end = true;
         }
@@ -54,6 +56,8 @@ public class Game {
     }
 
     private void generateJsonAndSend(int[][] mapIntArray) {
+        gameTimer.cancel();
+        gameTimer.purge();
         StringWriter jsonStringWriter = new StringWriter();
         try (JsonWriter writer = new JsonWriter(jsonStringWriter)) {
             writer.beginObject();
@@ -71,7 +75,7 @@ public class Game {
             writer.endArray();
             writer.name("players");
             writer.beginObject();
-            players.forEach((player) -> {
+            interactors.forEach((player) -> {
                 try {
                     writer.name(Integer.toString(player.getId()));
                     writer.beginObject();
@@ -112,47 +116,48 @@ public class Game {
             e.printStackTrace();
         }
         HashMap<Integer, String> playerJsonList = new HashMap<>();
-        players.forEach(player -> {
-            String playerJson = jsonStringWriter.toString();
-            playerJson = playerJson.replaceFirst("(\"you\":\"\")", "\"you\":\"" + player.getId() + "\"");
-            playerJsonList.put(player.getId(), playerJson);
+        interactors.forEach(interactor -> {
+            if(interactor instanceof Player) {
+                String playerJson = jsonStringWriter.toString();
+                playerJson = playerJson.replaceFirst("(\"you\":\"\")", "\"you\":\"" + interactor.getId() + "\"");
+                playerJsonList.put(interactor.getId(), playerJson);
+            } else if (interactor instanceof AI){
+                ((AI) interactor).nextTurn();
+            }
         });
         gameHandler.getInjector().getInstance(ConnectionThread.class).getWebSocketServer().sendJson(playerJsonList, this);
-        if(!isActive) {
-            gameTimer.cancel();
-            gameTimer.purge();
-        } else {
-            resetRoundTimer();
+        if(isActive) {
+            startRoundTimer();
         }
     }
 
-    public ArrayList<Player> getPlayers() {
-        return players;
+    public void gameReadyNextTurn() {
+        int countReadyPlayers = (int) interactors.stream().filter(Interactor::isReady).filter(Interactor::isActive).count();
+        int countActivePlayers = (int) interactors.stream().filter(Interactor::isActive).count();
+        if(countReadyPlayers == countActivePlayers) {
+            nextTurn();
+        }
+    }
+
+    public ArrayList<Interactor> getInteractors() {
+        return interactors;
     }
 
     public int getGameId() {
         return gameId;
     }
 
-    public boolean isActive() {
-        return isActive;
-    }
-
-    public boolean isStarted() {
-        return hasStarted;
-    }
-
-    public boolean hasEnded() {
-        return hasEnded;
+    public Map getMap() {
+        return map;
     }
 
     public void startGame() {
         hasStarted = true;
         isActive = true;
-        map = new Map((int)(Math.random() * 30) + 31, (int)(Math.random() * 30) + 31, players);
+        map = new Map((int)(Math.random() * 30) + 31, (int)(Math.random() * 30) + 31, interactors);
         initTurn();
         LOG.fine("Started game with players: ");
-        players.forEach((player) ->
+        interactors.forEach((player) ->
             LOG.fine("ID: " + player.getId() + "   Name: " + player.getName())
         );
     }
@@ -164,9 +169,7 @@ public class Game {
         gameHandler.gameEnded(gameId);
     }
 
-    public void resetRoundTimer() {
-        gameTimer.cancel();
-        gameTimer.purge();
+    public void startRoundTimer() {
         gameTimer = new Timer();
         TimerTask timerTask = new TimerTask() {
             @Override

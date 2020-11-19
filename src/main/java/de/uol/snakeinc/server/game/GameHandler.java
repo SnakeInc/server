@@ -1,6 +1,7 @@
 package de.uol.snakeinc.server.game;
 
 import com.google.inject.Injector;
+import de.uol.snakeinc.server.ai.AI;
 import de.uol.snakeinc.server.player.Player;
 
 import java.util.HashMap;
@@ -18,24 +19,25 @@ public class GameHandler {
     }
 
     public Player addPlayer(String name) {
-        Player player = new Player(name);
+        Player player;
         if(games.isEmpty() || !games.containsKey(gameIdPointer)) {
             Game game = new Game(this, gameIdPointer);
-            game.getPlayers().add(player);
+            player = new Player(name, game);
+            game.getInteractors().add(player);
             games.put(gameIdPointer, game);
             player.setId(1);
-            player.setGame(game);
             Timer timer = new Timer();
             timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
+                    addAiToGame(game, 4);
                     startGame();
                 }
             }, 10000);
         } else {
-            games.get(gameIdPointer).getPlayers().add(player);
-            player.setId(games.get(gameIdPointer).getPlayers().size() + 1);
-            player.setGame(games.get(gameIdPointer));
+            player = new Player(name, games.get(gameIdPointer));
+            games.get(gameIdPointer).getInteractors().add(player);
+            player.setId(games.get(gameIdPointer).getInteractors().size() + 1);
         }
         return player;
     }
@@ -51,6 +53,15 @@ public class GameHandler {
 
     public Injector getInjector() {
         return injector;
+    }
+
+    private void addAiToGame(Game game, int maxPlayers) {
+        while (game.getInteractors().size() < maxPlayers) {
+            String aiName = "AI_" + (game.getInteractors().size() + 1);
+            AI ai = new AI(aiName, game);
+            ai.setId(game.getInteractors().size() + 1);
+            game.getInteractors().add(ai);
+        }
     }
 
 }
