@@ -121,14 +121,21 @@ public class Game {
                 String playerJson = jsonStringWriter.toString();
                 playerJson = playerJson.replaceFirst("(\"you\":\"\")", "\"you\":\"" + interactor.getId() + "\"");
                 playerJsonList.put(interactor.getId(), playerJson);
-            } else if (interactor instanceof AI){
-                ((AI) interactor).nextTurn();
             }
         });
         gameHandler.getInjector().getInstance(ConnectionThread.class).getWebSocketServer().sendJson(playerJsonList, this);
         if(isActive) {
             startRoundTimer();
         }
+        interactors.forEach(((interactor) -> {
+            if(interactor instanceof AI) {
+                try {
+                    ((AI) interactor).nextTurn();
+                } catch (CloneNotSupportedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }));
     }
 
     public void gameReadyNextTurn() {
@@ -154,7 +161,7 @@ public class Game {
     public void startGame() {
         hasStarted = true;
         isActive = true;
-        map = new Map((int)(Math.random() * 30) + 31, (int)(Math.random() * 30) + 31, interactors);
+        map = new Map((int)(Math.random() * 41) + 40, (int)(Math.random() * 41) + 40, interactors);
         initTurn();
         LOG.fine("Started game with players: ");
         interactors.forEach((player) ->

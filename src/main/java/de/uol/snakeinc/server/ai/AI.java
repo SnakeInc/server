@@ -1,65 +1,109 @@
 package de.uol.snakeinc.server.ai;
 
+import de.uol.snakeinc.server.game.Action;
 import de.uol.snakeinc.server.game.Game;
 import de.uol.snakeinc.server.interactor.Interactor;
-import de.uol.snakeinc.server.player.Direction;
 
 public class AI extends Interactor {
-
-    private int[][] mapArray = null;
-    private int testSpeed;
-    private Direction testDirection;
 
     public AI(String name, Game game) {
         super(name, game);
     }
 
-    public void nextTurn() {
-        if(active) {
-            mapArray = game.getMap().getMap();
-            boolean findTurn = true;
-            int countTries = 0;
-            while(findTurn) {
-                testSpeed = speed;
-                try {
-                    testDirection = (Direction) direction.clone();
-                } catch (CloneNotSupportedException e) {
-                    e.printStackTrace();
-                }
-                int r = (int)(Math.random() * 5);
-                if (r == 0) {
-                    if (!testDoNothing()) {
-                        doNothing();
-                        findTurn = false;
+    public void nextTurn() throws CloneNotSupportedException {
+        if(active && !ready) {
+            AIPosition aiPosition = new AIPosition(positionX, positionY, speed, direction.clone(), game.getMap().getMap());
+            int[] result = new int[5];
+            for (int i = 0; i < 5; i++) {
+                aiPosition.init();
+                result[i] = 0;
+                if(aiPosition.calculateNewPosition(getAction(i))) {
+                    for (int j = 0; j < 5; j++) {
+                        if(aiPosition.calculateNewPosition(getAction(j))) {
+                            for (int v = 0; v < 5; v++) {
+                                if(aiPosition.calculateNewPosition(getAction(v))) {
+                                    for (int n = 0; n < 5; n++) {
+                                        if(aiPosition.calculateNewPosition(getAction(n))) {
+                                            for (int m = 0; m < 5; m++) {
+                                                if(aiPosition.calculateNewPosition(getAction(m))) {
+                                                    for (int l = 0; l < 5; l++) {
+                                                        if(aiPosition.calculateNewPosition(getAction(l))) {
+                                                            for (int k = 0; k < 5; k++) {
+                                                                if(aiPosition.calculateNewPosition(getAction(k))) {
+                                                                    for (int h = 0; h < 5; h++) {
+                                                                        if(aiPosition.calculateNewPosition(getAction(h))) {
+                                                                            result[i]++;
+                                                                        }
+                                                                        aiPosition.resetToDepth(7);
+                                                                    }
+                                                                    result[i] = result[i] + 5;
+                                                                }
+                                                                aiPosition.resetToDepth(6);
+                                                            }
+                                                            result[i] = result[i] + 25;
+                                                        }
+                                                        aiPosition.resetToDepth(5);
+                                                    }
+                                                    result[i] = result[i] + 125;
+                                                }
+                                                aiPosition.resetToDepth(4);
+                                            }
+                                            result[i] = result[i] + 625;
+                                        }
+                                        aiPosition.resetToDepth(3);
+                                    }
+                                    result[i] = result[i] + 3125;
+                                }
+                                aiPosition.resetToDepth(2);
+                            }
+                            result[i] = result[i] + 15625;
+                        }
+                        aiPosition.resetToDepth(1);
                     }
-                } else if (r == 1) {
-                    if (!testTurnLeft()) {
-                        turnLeft();
-                        findTurn = false;
-                    }
-                } else if (r == 2) {
-                    if (!testTurnRight()) {
-                        turnRight();
-                        findTurn = false;
-                    }
-                } else if (r == 3) {
-                    if (!testSpeedUp()) {
-                        speedUp();
-                        findTurn = false;
-                    }
-                } else if (r == 4) {
-                    if (!testSpeedDown()) {
-                        speedDown();
-                        findTurn = false;
-                    }
-                }
-                ++countTries;
-                if(countTries > 20) {
-                    doNothing();
-                    findTurn = false;
+                    result[i] = result[i] + 78125;
                 }
             }
+            int bestAction = 0;
+            int max = 0;
+            for (int k = 0; k < result.length; k++) {
+                if (result[k] >= max) {
+                    bestAction = k;
+                    max = result[k];
+                }
+            }
+            doAction(getAction(bestAction));
+
             game.gameReadyNextTurn();
+        }
+    }
+
+    private Action getAction(int a) {
+        if(a == 0) {
+            return Action.CHANGE_NOTHING;
+        } else if (a == 1) {
+            return Action.TURN_LEFT;
+        } else if (a == 2) {
+            return Action.TURN_RIGHT;
+        } else if (a == 3) {
+            return Action.SPEED_UP;
+        } else if (a == 4) {
+            return Action.SLOW_DOWN;
+        } else {
+            return Action.CHANGE_NOTHING;
+        }
+    }
+
+    private void doAction(Action action) {
+        if(action.equals(Action.SLOW_DOWN)) {
+            speedDown();
+        } else if (action.equals(Action.TURN_LEFT)) {
+            turnLeft();
+        } else if (action.equals(Action.TURN_RIGHT)) {
+            turnRight();
+        } else if (action.equals(Action.SPEED_UP)) {
+            speedUp();
+        } else {
+            doNothing();
         }
     }
 
@@ -68,127 +112,7 @@ public class AI extends Interactor {
         if(active) {
             active = false;
             ready = false;
-            LOG.fine("Game: " + game.getGameId()+ " ai " + name + " died! Because: " + reason);
+            LOG.fine("Game: " + game.getGameId()+ " AI " + name + " died! Because: " + reason);
         }
-    }
-
-    private boolean testDoNothing() {
-        return calculateTestFrame();
-    }
-
-    private boolean testTurnLeft() {
-        testDirection.turnLeft();
-        return calculateTestFrame();
-    }
-
-    private boolean testTurnRight() {
-        testDirection.turnRight();
-        return calculateTestFrame();
-    }
-
-    private boolean testSpeedUp() {
-        ++testSpeed;
-        if(testSpeed >= 10) {
-            return true;
-        }
-        return calculateTestFrame();
-    }
-
-    private boolean testSpeedDown() {
-        --testSpeed;
-        if(testSpeed < 1) {
-            return true;
-        }
-        return calculateTestFrame();
-    }
-
-    private boolean calculateTestFrame() {
-        int playerDirection = testDirection.getDirection();
-        int turnCount = game.getMap().getTurnCount();
-        if(playerDirection == 1 || playerDirection == 3) {
-            int newPositionX;
-            if(playerDirection == 1) {
-                newPositionX = getPositionX() + testSpeed;
-            } else {
-                newPositionX = getPositionX() - testSpeed;
-            }
-            if(newPositionX < 0 || newPositionX >= game.getMap().getxSize()) {
-                return true;
-            }
-            for(int i = 1; i <= testSpeed; ++i) {
-                if(turnCount % 6 == 0 && testSpeed > 2) {
-                    if(i < 2 || i == testSpeed) {
-                        if(playerDirection == 1) {
-                            if (testMapEntry(getPositionX() + i, getPositionY())) {
-                                return true;
-                            }
-                        } else {
-                            if (testMapEntry(getPositionX() - i, getPositionY())) {
-                                return true;
-                            }
-                        }
-                    }
-                } else {
-                    if(playerDirection == 1) {
-                        if (testMapEntry(getPositionX() + i, getPositionY())) {
-                            return true;
-                        }
-                    } else {
-                        if (testMapEntry(getPositionX() - i, getPositionY())) {
-                            return true;
-                        }
-                    }
-                }
-            }
-        } else if(playerDirection == 0 || playerDirection == 2) {
-            int newPositionY;
-            if(playerDirection == 0) {
-                newPositionY = getPositionY() - testSpeed;
-            } else {
-                newPositionY = getPositionY() + testSpeed;
-            }
-            if(newPositionY < 0 || newPositionY >= game.getMap().getySize()) {
-                return true;
-            }
-            for(int i = 1; i <= testSpeed; ++i) {
-                if(turnCount % 6 == 0 && testSpeed > 2) {
-                    if(i < 2 || i == testSpeed) {
-                        if(playerDirection == 0) {
-                            if (testMapEntry(getPositionX(), getPositionY() - i)) {
-                                return true;
-                            }
-                        } else {
-                            if (testMapEntry(getPositionX(), getPositionY() + i)) {
-                                return true;
-                            }
-                        }
-                    }
-                } else {
-                    if(playerDirection == 0) {
-                        if (testMapEntry(getPositionX(), getPositionY() - i)) {
-                            return true;
-                        }
-                    } else {
-                        if (testMapEntry(getPositionX(), getPositionY() + i)) {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    private boolean testMapEntry(int x, int y) {
-        if(mapArray != null) {
-            if((x >= 0 && x < game.getMap().getxSize()) && (y >= 0 && y < game.getMap().getySize())) {
-                if (mapArray[y][x] != 0) {
-                    return true;
-                } else {
-                    return false;
-                }
-            }
-        }
-        return true;
     }
 }

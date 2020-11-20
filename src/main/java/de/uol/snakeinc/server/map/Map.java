@@ -1,7 +1,6 @@
 package de.uol.snakeinc.server.map;
 
 import de.uol.snakeinc.server.interactor.Interactor;
-import de.uol.snakeinc.server.player.Player;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -55,6 +54,12 @@ public class Map {
                                     } else {
                                         setMapEntry(player.getPositionX() - i, player.getPositionY(), player);
                                     }
+                                } else {
+                                    if(playerDirection == 1) {
+                                        checkMapEntry(player.getPositionX() + i, player.getPositionY(), player);
+                                    } else {
+                                        checkMapEntry(player.getPositionX() - i, player.getPositionY(), player);
+                                    }
                                 }
                             } else {
                                 if(playerDirection == 1) {
@@ -83,6 +88,12 @@ public class Map {
                                     } else {
                                         setMapEntry(player.getPositionX(), player.getPositionY() + i, player);
                                     }
+                                } else {
+                                    if(playerDirection == 0) {
+                                        checkMapEntry(player.getPositionX(), player.getPositionY() - i, player);
+                                    } else {
+                                        checkMapEntry(player.getPositionX(), player.getPositionY() + i, player);
+                                    }
                                 }
                             } else {
                                 if(playerDirection == 0) {
@@ -104,15 +115,23 @@ public class Map {
         return map;
     }
 
-    private void setMapEntry(int x, int y, Interactor player) {
+    private void setMapEntry(int x, int y, Interactor interactor) {
         if((x >= 0 && x < xSize) && (y >= 0 && y < ySize)) {
             if (map[y][x] != 0) {
                 map[y][x] = -1;
-                player.died("Collision!");
+                interactor.died("Collision!");
                 checkRoundLog(x, y);
             } else {
-                map[y][x] = player.getId();
-                logOneRound(player, x, y);
+                map[y][x] = interactor.getId();
+                logOneRound(interactor, x, y);
+            }
+        }
+    }
+
+    private void checkMapEntry(int x, int y, Interactor interactor) {
+        if((x >= 0 && x < xSize) && (y >= 0 && y < ySize)) {
+            if (map[y][x] != 0) {
+                interactor.died("Collision!");
             }
         }
     }
@@ -143,9 +162,5 @@ public class Map {
 
     public int[][] getMap() {
         return map;
-    }
-
-    public int getTurnCount(){
-        return turnCount;
     }
 }
