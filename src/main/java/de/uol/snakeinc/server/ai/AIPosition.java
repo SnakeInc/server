@@ -18,13 +18,15 @@ public class AIPosition {
     private int currentDepth = 0;
     private HashMap<Integer, Object[]> history = new HashMap<>();
     private int[][] mapArray;
+    private int turnCount = 0;
 
-    public AIPosition(int x, int y, int speed, Direction direction, int[][] mapArray) {
+    public AIPosition(int x, int y, int speed, Direction direction, int[][] mapArray, int turnCount) {
         this.oldX = x;
         this.oldY = y;
         this.oldSpeed = speed;
         this.oldDirection = direction;
         this.mapArray = mapArray;
+        this.turnCount = turnCount;
     }
 
     public void init() throws CloneNotSupportedException {
@@ -90,13 +92,27 @@ public class AIPosition {
                 return false;
             }
             for(int i = 1; i <= speed; ++i) {
-                if(playerDirection == 1) {
-                    if (testMapEntry(x + i, y)) {
-                        return false;
+                if(turnCount % 6 == 0 && speed > 2) {
+                    if(i < 2 || i == speed) {
+                        if(playerDirection == 1) {
+                            if (testMapEntry(x + i, y)) {
+                                return false;
+                            }
+                        } else {
+                            if (testMapEntry(x - i, y)) {
+                                return false;
+                            }
+                        }
                     }
                 } else {
-                    if (testMapEntry(x - i, y)) {
-                        return false;
+                    if(playerDirection == 1) {
+                        if (testMapEntry(x + i, y)) {
+                            return false;
+                        }
+                    } else {
+                        if (testMapEntry(x - i, y)) {
+                            return false;
+                        }
                     }
                 }
             }
@@ -112,13 +128,27 @@ public class AIPosition {
                 return false;
             }
             for(int i = 1; i <= speed; ++i) {
-                if(playerDirection == 0) {
-                    if (testMapEntry(x, y - i)) {
-                        return false;
+                if(turnCount % 6 == 0 && speed > 2) {
+                    if(i < 2 || i == speed) {
+                        if(playerDirection == 0) {
+                            if (testMapEntry(x, y - i)) {
+                                return false;
+                            }
+                        } else {
+                            if (testMapEntry(x, y + i)) {
+                                return false;
+                            }
+                        }
                     }
                 } else {
-                    if (testMapEntry(x, y + i)) {
-                        return false;
+                    if(playerDirection == 0) {
+                        if (testMapEntry(x, y - i)) {
+                            return false;
+                        }
+                    } else {
+                        if (testMapEntry(x, y + i)) {
+                            return false;
+                        }
                     }
                 }
             }

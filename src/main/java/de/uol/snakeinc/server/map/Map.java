@@ -54,12 +54,6 @@ public class Map {
                                     } else {
                                         setMapEntry(player.getPositionX() - i, player.getPositionY(), player);
                                     }
-                                } else {
-                                    if(playerDirection == 1) {
-                                        checkMapEntry(player.getPositionX() + i, player.getPositionY(), player);
-                                    } else {
-                                        checkMapEntry(player.getPositionX() - i, player.getPositionY(), player);
-                                    }
                                 }
                             } else {
                                 if(playerDirection == 1) {
@@ -87,12 +81,6 @@ public class Map {
                                         setMapEntry(player.getPositionX(), player.getPositionY() - i, player);
                                     } else {
                                         setMapEntry(player.getPositionX(), player.getPositionY() + i, player);
-                                    }
-                                } else {
-                                    if(playerDirection == 0) {
-                                        checkMapEntry(player.getPositionX(), player.getPositionY() - i, player);
-                                    } else {
-                                        checkMapEntry(player.getPositionX(), player.getPositionY() + i, player);
                                     }
                                 }
                             } else {
@@ -124,14 +112,6 @@ public class Map {
             } else {
                 map[y][x] = interactor.getId();
                 logOneRound(interactor, x, y);
-            }
-        }
-    }
-
-    private void checkMapEntry(int x, int y, Interactor interactor) {
-        if((x >= 0 && x < xSize) && (y >= 0 && y < ySize)) {
-            if (map[y][x] != 0) {
-                interactor.died("Collision!");
             }
         }
     }

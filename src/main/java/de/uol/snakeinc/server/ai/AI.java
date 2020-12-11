@@ -6,13 +6,15 @@ import de.uol.snakeinc.server.interactor.Interactor;
 
 public class AI extends Interactor {
 
+    private int turnCount = 1;
+
     public AI(String name, Game game) {
         super(name, game);
     }
 
     public void nextTurn() throws CloneNotSupportedException {
         if(active && !ready) {
-            AIPosition aiPosition = new AIPosition(positionX, positionY, speed, direction.clone(), game.getMap().getMap());
+            AIPosition aiPosition = new AIPosition(positionX, positionY, speed, direction.clone(), game.getMap().getMap(), turnCount);
             int[] result = new int[5];
             for (int i = 0; i < 5; i++) {
                 aiPosition.init();
@@ -74,6 +76,7 @@ public class AI extends Interactor {
             doAction(getAction(bestAction));
 
             game.gameReadyNextTurn();
+            turnCount++;
         }
     }
 
