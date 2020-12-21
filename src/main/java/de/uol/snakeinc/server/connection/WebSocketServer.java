@@ -29,7 +29,15 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
     public void onOpen(WebSocket webSocket, ClientHandshake clientHandshake) {
         LOG.fine("Got a new client with: " + webSocket.getRemoteSocketAddress());
         webSocket.setAttachment(UUID.randomUUID());
-        String name = webSocket.getResourceDescriptor().toLowerCase().replace("/?key=", "");
+        String url = webSocket.getResourceDescriptor().toLowerCase();
+        String name;
+        if (url.contains("/?key=")) {
+            name = url.replace("/?key=", "");
+        } else if (url.contains("/")) {
+            name = url.replace("/", "");
+        } else {
+            name = url;
+        }
         Player player = gameHandler.addPlayer(name);
         playerHashMap.put(webSocket.getAttachment(), new WebsocketPlayerEntry(player, webSocket));
     }
@@ -37,7 +45,14 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
     @Override
     public void onClose(WebSocket webSocket, int i, String s, boolean b) {
         if(playerHashMap.containsKey(webSocket.getAttachment())) {
-            playerHashMap.get(webSocket.getAttachment()).getPlayer().died("Connection lost!");
+            Player player = playerHashMap.get(webSocket.getAttachment()).getPlayer();
+            player.died("Connection lost!");
+            if(player.getGame().getInteractors().contains(player)) {
+                player.getGame().getInteractors().remove(player);
+            }
+            if(player.getGame().isActive() && player.getGame().getInteractors().stream().noneMatch(Interactor::isActive)) {
+                player.getGame().endGame();
+            }
             playerHashMap.remove(webSocket.getAttachment());
         }
         if(webSocket.isOpen()) {

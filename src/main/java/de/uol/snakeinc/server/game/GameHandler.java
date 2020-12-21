@@ -2,6 +2,7 @@ package de.uol.snakeinc.server.game;
 
 import com.google.inject.Injector;
 import de.uol.snakeinc.server.ai.AI;
+import de.uol.snakeinc.server.connection.ConnectionThread;
 import de.uol.snakeinc.server.player.Player;
 
 import java.util.HashMap;
@@ -26,14 +27,7 @@ public class GameHandler {
             game.getInteractors().add(player);
             games.put(gameIdPointer, game);
             player.setId(1);
-            Timer timer = new Timer();
-            timer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    addAiToGame(game, 4);
-                    startGame();
-                }
-            }, 10000);
+            startTimer(gameIdPointer, 0);
         } else {
             player = new Player(name, games.get(gameIdPointer));
             player.setId(games.get(gameIdPointer).getInteractors().size() + 1);
@@ -62,6 +56,25 @@ public class GameHandler {
             ai.setId(game.getInteractors().size() + 1);
             game.getInteractors().add(ai);
         }
+    }
+
+    private void startTimer(int gameId, int recursiveCount) {
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                //addAiToGame(game, 4);
+                if(recursiveCount > 10) {
+                    injector.getInstance(ConnectionThread.class).getWebSocketServer().endGame(games.get(gameId));
+                    games.get(gameId).endGame();
+                    ++gameIdPointer;
+                } else if(games.get(gameId).getInteractors().size() >= 2) {
+                    startGame();
+                } else {
+                    startTimer(gameId, recursiveCount + 1);
+                }
+            }
+        }, 20000);
     }
 
 }

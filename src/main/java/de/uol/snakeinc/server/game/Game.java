@@ -14,6 +14,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
@@ -45,7 +46,9 @@ public class Game {
     public void nextTurn() {
         int[][] mapIntArray = map.calculateFrame();
         boolean end = false;
-        if(interactors.stream().noneMatch(Interactor::isActive) && !hasEnded) {
+        if(interactors.stream().filter(Interactor::isActive).count() == 1 && !hasEnded) {
+            Optional<Interactor> winner = interactors.stream().filter(Interactor::isActive).findFirst();
+            winner.ifPresent(interactor -> LOG.fine("Game: " + gameId + " - Winner is " + interactor.getName()));
             endGame();
             end = true;
         }
@@ -56,8 +59,7 @@ public class Game {
     }
 
     private void generateJsonAndSend(int[][] mapIntArray) {
-        gameTimer.cancel();
-        gameTimer.purge();
+        cancelRoundTimer();
         StringWriter jsonStringWriter = new StringWriter();
         try (JsonWriter writer = new JsonWriter(jsonStringWriter)) {
             writer.beginObject();
@@ -119,7 +121,7 @@ public class Game {
         interactors.forEach(interactor -> {
             if(interactor instanceof Player) {
                 String playerJson = jsonStringWriter.toString();
-                playerJson = playerJson.replaceFirst("(\"you\":\"\")", "\"you\":\"" + interactor.getId() + "\"");
+                playerJson = playerJson.replaceFirst("(\"you\":\"\")", "\"you\":" + interactor.getId());
                 playerJsonList.put(interactor.getId(), playerJson);
             }
         });
@@ -150,6 +152,10 @@ public class Game {
         return interactors;
     }
 
+    public boolean isActive() {
+        return isActive;
+    }
+
     public int getGameId() {
         return gameId;
     }
@@ -173,6 +179,7 @@ public class Game {
         LOG.fine("Game " + gameId + " has ended!");
         isActive = false;
         hasEnded = true;
+        cancelRoundTimer();
         gameHandler.gameEnded(gameId);
     }
 
@@ -181,10 +188,15 @@ public class Game {
         TimerTask timerTask = new TimerTask() {
             @Override
             public void run() {
-                LOG.fine("Updated timer");
+                LOG.fine("Updated timer.");
                 nextTurn();
             }
         };
         gameTimer.schedule(timerTask, 14000);
+    }
+
+    private void cancelRoundTimer() {
+        gameTimer.cancel();
+        gameTimer.purge();
     }
 }
