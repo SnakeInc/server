@@ -131,6 +131,14 @@ public class Map {
         });
     }
 
+    public int[][] exportMap() {
+        int[][] cloneArray = new int[map.length][map[0].length];
+        for (int i = 0; i < map.length; i++) {
+            cloneArray[i] = map[i].clone();
+        }
+        return cloneArray;
+    }
+
     public int getxSize() {
         return xSize;
     }
@@ -141,5 +149,9 @@ public class Map {
 
     public int[][] getMap() {
         return map;
+    }
+
+    public int getTurnCount() {
+        return turnCount;
     }
 }

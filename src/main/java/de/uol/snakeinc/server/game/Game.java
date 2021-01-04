@@ -3,6 +3,7 @@ package de.uol.snakeinc.server.game;
 import com.google.gson.stream.JsonWriter;
 import de.uol.snakeinc.server.ai.AI;
 import de.uol.snakeinc.server.connection.ConnectionThread;
+import de.uol.snakeinc.server.export.ExportManager;
 import de.uol.snakeinc.server.interactor.Interactor;
 import de.uol.snakeinc.server.map.Map;
 import de.uol.snakeinc.server.player.Player;
@@ -30,6 +31,7 @@ public class Game {
     private int gameId;
     private ArrayList<Interactor> interactors = new ArrayList<>();
     private Map map;
+    private HashMap<Integer, int[][]> boardHistory = new HashMap<>();
     private Timer gameTimer = new Timer();
 
     public Game(GameHandler gameHandler, int gameId) {
@@ -40,11 +42,13 @@ public class Game {
 
     private void initTurn() {
         int[][] mapIntArray = map.calculateInitFrame();
+        logMapToHistory();
         generateJsonAndSend(mapIntArray);
     }
 
     public void nextTurn() {
         int[][] mapIntArray = map.calculateFrame();
+        logMapToHistory();
         boolean end = false;
         if(interactors.stream().filter(Interactor::isActive).count() == 1 && !hasEnded) {
             Optional<Interactor> winner = interactors.stream().filter(Interactor::isActive).findFirst();
@@ -126,7 +130,7 @@ public class Game {
             }
         });
         gameHandler.getInjector().getInstance(ConnectionThread.class).getWebSocketServer().sendJson(playerJsonList, this);
-        if(isActive) {
+        if(isActive && hasStarted && !hasEnded) {
             startRoundTimer();
         }
         interactors.forEach(((interactor) -> {
@@ -164,6 +168,11 @@ public class Game {
         return map;
     }
 
+    public int getTurnCount() {
+
+        return map.getTurnCount();
+    }
+
     public void startGame() {
         hasStarted = true;
         isActive = true;
@@ -176,11 +185,16 @@ public class Game {
     }
 
     public void endGame() {
-        LOG.fine("Game " + gameId + " has ended!");
-        isActive = false;
-        hasEnded = true;
-        cancelRoundTimer();
-        gameHandler.gameEnded(gameId);
+        if(!hasEnded) {
+            LOG.fine("Game " + gameId + " has ended!");
+            isActive = false;
+            hasEnded = true;
+            cancelRoundTimer();
+            gameHandler.gameEnded(gameId);
+            if(hasStarted) {
+                gameHandler.getInjector().getInstance(ExportManager.class).generateExport(this);
+            }
+        }
     }
 
     public void startRoundTimer() {
@@ -198,5 +212,21 @@ public class Game {
     private void cancelRoundTimer() {
         gameTimer.cancel();
         gameTimer.purge();
+    }
+
+    private void logMapToHistory() {
+        boardHistory.put(getTurnCount(), map.exportMap());
+    }
+
+    public HashMap<Integer, int[][]> exportMapHistory() {
+        return boardHistory;
+    }
+
+    public int getXSize() {
+        return map.getxSize();
+    }
+
+    public int getYSize() {
+        return map.getySize();
     }
 }

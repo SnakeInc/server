@@ -1,4 +1,4 @@
-package de.uol.snakeinc.server.player;
+package de.uol.snakeinc.server.interactor;
 
 public interface Instructions {
 

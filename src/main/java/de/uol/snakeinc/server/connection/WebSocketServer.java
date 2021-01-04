@@ -10,6 +10,7 @@ import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -47,9 +48,6 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
         if(playerHashMap.containsKey(webSocket.getAttachment())) {
             Player player = playerHashMap.get(webSocket.getAttachment()).getPlayer();
             player.died("Connection lost!");
-            if(player.getGame().getInteractors().contains(player)) {
-                player.getGame().getInteractors().remove(player);
-            }
             if(player.getGame().isActive() && player.getGame().getInteractors().stream().noneMatch(Interactor::isActive)) {
                 player.getGame().endGame();
             }
@@ -106,11 +104,15 @@ public class WebSocketServer extends org.java_websocket.server.WebSocketServer {
     }
 
     public void endGame(Game game) {
+        ArrayList<WebsocketPlayerEntry> toDelete = new ArrayList<>();
         game.getInteractors().forEach((player) -> playerHashMap.forEach((uuid , wpe) -> {
             if(player == wpe.getPlayer() && wpe.getWebSocket().isOpen()) {
-                wpe.getWebSocket().close();
+                toDelete.add(wpe);
             }
         }));
+        toDelete.forEach((wpe) -> {
+            wpe.getWebSocket().close();
+        });
     }
 
 }

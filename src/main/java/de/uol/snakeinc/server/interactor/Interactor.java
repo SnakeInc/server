@@ -2,7 +2,6 @@ package de.uol.snakeinc.server.interactor;
 
 import de.uol.snakeinc.server.game.Game;
 import de.uol.snakeinc.server.player.Direction;
-import de.uol.snakeinc.server.player.Instructions;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
