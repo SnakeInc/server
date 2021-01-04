@@ -60,7 +60,7 @@ public class Export {
         try {
             SimpleDateFormat formatter= new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
             Date date = new Date(System.currentTimeMillis());
-            File file = new File("logs", formatter.format(date) + ".json");
+            File file = new File("logs_554", formatter.format(date) + ".json");
             if (!file.exists()) {
                 file.getParentFile().mkdirs();
                 file.createNewFile();

@@ -50,7 +50,7 @@ public class Game {
         int[][] mapIntArray = map.calculateFrame();
         logMapToHistory();
         boolean end = false;
-        if(interactors.stream().filter(Interactor::isActive).count() == 1 && !hasEnded) {
+        if(interactors.stream().noneMatch(Interactor::isActive) && !hasEnded) {
             Optional<Interactor> winner = interactors.stream().filter(Interactor::isActive).findFirst();
             winner.ifPresent(interactor -> LOG.fine("Game: " + gameId + " - Winner is " + interactor.getName()));
             endGame();
@@ -169,7 +169,6 @@ public class Game {
     }
 
     public int getTurnCount() {
-
         return map.getTurnCount();
     }
 

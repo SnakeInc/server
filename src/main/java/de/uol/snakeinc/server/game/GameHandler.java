@@ -27,7 +27,7 @@ public class GameHandler {
             game.getInteractors().add(player);
             games.put(gameIdPointer, game);
             player.setId(1);
-            startTimer(gameIdPointer, 0);
+            startTimer(gameIdPointer);
         } else {
             player = new Player(name, games.get(gameIdPointer));
             player.setId(games.get(gameIdPointer).getInteractors().size() + 1);
@@ -58,23 +58,15 @@ public class GameHandler {
         }
     }
 
-    private void startTimer(int gameId, int recursiveCount) {
+    private void startTimer(int gameId) {
         Timer timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                //addAiToGame(game, 4);
-                if(recursiveCount > 10) {
-                    injector.getInstance(ConnectionThread.class).getWebSocketServer().endGame(games.get(gameId));
-                    games.get(gameId).endGame();
-                    ++gameIdPointer;
-                } else if(games.get(gameId).getInteractors().size() >= 2) {
-                    startGame();
-                } else {
-                    startTimer(gameId, recursiveCount + 1);
-                }
+                addAiToGame(games.get(gameId), 4);
+                startGame();
             }
-        }, 20000);
+        }, 5000);
     }
 
 }

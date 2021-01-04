@@ -23,7 +23,7 @@ public class ConnectionThread extends Thread {
         @Override
         public void run() {
                 while (running) {
-                        webSocketServer = new WebSocketEnableWss().initWebSocketServer(injector.getInstance(GameHandler.class), 555);
+                        webSocketServer = new WebSocketEnableWss().initWebSocketServer(injector.getInstance(GameHandler.class), 554);
                         webSocketServer.run();
                 }
         }
