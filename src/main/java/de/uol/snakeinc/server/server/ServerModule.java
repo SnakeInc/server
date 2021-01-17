@@ -4,7 +4,6 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import de.uol.snakeinc.server.connection.ConnectionThread;
-import de.uol.snakeinc.server.export.ExportManager;
 import de.uol.snakeinc.server.game.GameHandler;
 
 import java.util.logging.ConsoleHandler;
@@ -16,7 +15,6 @@ public class ServerModule extends AbstractModule {
 
     private GameHandler gameHandler = new GameHandler();
     private ConnectionThread connectionThread  = new ConnectionThread();
-    private ExportManager exportManager = new ExportManager();
     private final Injector injector = Guice.createInjector(this);
 
     public ServerModule() {
@@ -35,7 +33,6 @@ public class ServerModule extends AbstractModule {
         bind(GameHandler.class).toInstance(gameHandler);
         bind(ConnectionThread.class).toInstance(connectionThread);
         bind(ServerModule.class).toInstance(this);
-        bind(ExportManager.class).toInstance(exportManager);
     }
 
     private void inject() {
