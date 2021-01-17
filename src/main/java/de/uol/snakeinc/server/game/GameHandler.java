@@ -2,7 +2,6 @@ package de.uol.snakeinc.server.game;
 
 import com.google.inject.Injector;
 import de.uol.snakeinc.server.ai.AI;
-import de.uol.snakeinc.server.connection.ConnectionThread;
 import de.uol.snakeinc.server.player.Player;
 
 import java.util.HashMap;

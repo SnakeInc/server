@@ -190,9 +190,6 @@ public class Game {
             hasEnded = true;
             cancelRoundTimer();
             gameHandler.gameEnded(gameId);
-            if(hasStarted) {
-                gameHandler.getInjector().getInstance(ExportManager.class).generateExport(this);
-            }
         }
     }
 
