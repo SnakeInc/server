@@ -3,7 +3,6 @@ package de.uol.snakeinc.server.game;
 import com.google.gson.stream.JsonWriter;
 import de.uol.snakeinc.server.ai.AI;
 import de.uol.snakeinc.server.connection.ConnectionThread;
-import de.uol.snakeinc.server.export.ExportManager;
 import de.uol.snakeinc.server.interactor.Interactor;
 import de.uol.snakeinc.server.map.Map;
 import de.uol.snakeinc.server.player.Player;
